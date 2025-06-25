@@ -1,6 +1,15 @@
 # PyConfBox Monorepo Configuration
 # This file manages the development environment for the entire monorepo
 
+[tool.uv.workspace]
+members = [
+    "packages/pyconfbox",
+    "packages/pyconfbox-django",
+    "packages/pyconfbox-mysql", 
+    "packages/pyconfbox-postgresql",
+    "packages/pyconfbox-mongodb"
+]
+
 [project]
 name = "pyconfbox-monorepo"
 version = "0.1.0"

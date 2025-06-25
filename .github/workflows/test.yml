@@ -100,20 +100,21 @@ jobs:
       - name: Install dependencies
         if: steps.check-changes.outputs.run-tests == 'true'
         run: |
-          # Install main pyconfbox package first
-          uv pip install --system -e packages/pyconfbox
-          # Install plugin package
-          cd packages/${{ matrix.package }}
-          uv pip install --system -e .[dev]
+          # Install all packages in workspace mode
+          uv sync --package ${{ matrix.package }} --dev
       
       - name: Run tests
         if: steps.check-changes.outputs.run-tests == 'true'
         run: |
           cd packages/${{ matrix.package }}
-          uv run pytest -v
+          if [ -d "tests" ] && [ "$(find tests -name 'test_*.py' | wc -l)" -gt 0 ]; then
+            uv run --package ${{ matrix.package }} pytest tests/ -v
+          else
+            echo "No tests found for ${{ matrix.package }}, skipping..."
+          fi
       
       - name: Run linting
         if: steps.check-changes.outputs.run-tests == 'true'
         run: |
           cd packages/${{ matrix.package }}
-          uv run ruff check . 
+          uv run --package ${{ matrix.package }} ruff check . 

@@ -55,8 +55,11 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = "-v --strict-markers"
 
+[tool.uv.sources]
+pyconfbox = { workspace = true }
+
 [dependency-groups]
 dev = [
     "pytest>=8.3.5",
     "pytest-mock>=3.14.1",
-] 
+]
