@@ -51,6 +51,7 @@ jobs:
   build-and-publish:
     needs: detect-changes
     runs-on: ubuntu-latest
+    environment: pypi
     strategy:
       matrix:
         package: [pyconfbox, pyconfbox-django, pyconfbox-mysql, pyconfbox-postgresql, pyconfbox-mongodb]
