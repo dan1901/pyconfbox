@@ -13,14 +13,14 @@ except ImportError:
 
 class PyConfBoxMiddleware:
     """Django middleware to integrate PyConfBox with Django settings.
-    
+
     This middleware initializes PyConfBox configuration and makes it available
     throughout the Django application lifecycle.
     """
 
     def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         """Initialize the middleware.
-        
+
         Args:
             get_response: The next middleware or view in the chain.
         """
@@ -29,7 +29,7 @@ class PyConfBoxMiddleware:
 
     def _initialize_config(self) -> Config:
         """Initialize PyConfBox configuration from Django settings.
-        
+
         Returns:
             Configured PyConfBox Config instance.
         """
@@ -52,7 +52,7 @@ class PyConfBoxMiddleware:
 
     def _sync_django_settings(self, config: Config) -> None:
         """Sync important Django settings to PyConfBox.
-        
+
         Args:
             config: PyConfBox Config instance.
         """
@@ -69,10 +69,10 @@ class PyConfBoxMiddleware:
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
         """Process the request.
-        
+
         Args:
             request: Django HTTP request.
-            
+
         Returns:
             Django HTTP response.
         """

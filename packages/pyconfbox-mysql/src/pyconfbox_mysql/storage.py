@@ -18,7 +18,7 @@ except ImportError:
 
 class MySQLStorage(BaseStorage):
     """MySQL database storage backend for PyConfBox.
-    
+
     This storage backend uses MySQL database to persist configuration values.
     Requires pymysql package to be installed.
     """
@@ -34,7 +34,7 @@ class MySQLStorage(BaseStorage):
         **kwargs: Any
     ) -> None:
         """Initialize MySQL storage.
-        
+
         Args:
             host: MySQL server host.
             port: MySQL server port.
@@ -130,10 +130,10 @@ class MySQLStorage(BaseStorage):
 
     def get(self, key: str) -> Optional[ConfigValue]:
         """Get a configuration value from MySQL.
-        
+
         Args:
             key: Configuration key.
-            
+
         Returns:
             Configuration value if found, None otherwise.
         """
@@ -172,7 +172,7 @@ class MySQLStorage(BaseStorage):
 
     def set(self, key: str, value: ConfigValue) -> None:
         """Set a configuration value in MySQL.
-        
+
         Args:
             key: Configuration key.
             value: Configuration value to store.
@@ -188,7 +188,7 @@ class MySQLStorage(BaseStorage):
         try:
             with connection.cursor() as cursor:
                 cursor.execute(f"""
-                    INSERT INTO `{self.table}` 
+                    INSERT INTO `{self.table}`
                     (`key`, `value`, `data_type`, `scope`, `storage`, `immutable`, `created_at`, `updated_at`)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                     ON DUPLICATE KEY UPDATE
@@ -214,10 +214,10 @@ class MySQLStorage(BaseStorage):
 
     def delete(self, key: str) -> bool:
         """Delete a configuration value from MySQL.
-        
+
         Args:
             key: Configuration key.
-            
+
         Returns:
             True if deleted, False if not found.
         """
@@ -236,10 +236,10 @@ class MySQLStorage(BaseStorage):
 
     def exists(self, key: str) -> bool:
         """Check if a configuration key exists in MySQL.
-        
+
         Args:
             key: Configuration key.
-            
+
         Returns:
             True if exists, False otherwise.
         """
@@ -258,7 +258,7 @@ class MySQLStorage(BaseStorage):
 
     def keys(self) -> List[str]:
         """Get all configuration keys from MySQL.
-        
+
         Returns:
             List of configuration keys.
         """
@@ -285,7 +285,7 @@ class MySQLStorage(BaseStorage):
 
     def update(self, data: Dict[str, ConfigValue]) -> None:
         """Update multiple configuration values in MySQL.
-        
+
         Args:
             data: Dictionary of configuration values.
         """
@@ -294,7 +294,7 @@ class MySQLStorage(BaseStorage):
 
     def get_info(self) -> Dict[str, Any]:
         """Get information about the MySQL storage.
-        
+
         Returns:
             Storage information dictionary.
         """

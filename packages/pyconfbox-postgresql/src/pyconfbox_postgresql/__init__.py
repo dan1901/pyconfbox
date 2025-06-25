@@ -9,4 +9,4 @@ __email__ = "edc1901@gmail.com"
 
 from .storage import PostgreSQLStorage
 
-__all__ = ["PostgreSQLStorage"] 
+__all__ = ["PostgreSQLStorage"]

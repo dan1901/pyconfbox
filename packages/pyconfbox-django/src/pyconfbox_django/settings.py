@@ -13,14 +13,14 @@ except ImportError:
 
 class DjangoStorage(BaseStorage):
     """Storage backend that integrates with Django settings.
-    
+
     This storage allows PyConfBox to read from and write to Django settings,
     providing seamless integration between PyConfBox and Django configuration.
     """
 
     def __init__(self, prefix: str = "PYCONFBOX_") -> None:
         """Initialize Django storage.
-        
+
         Args:
             prefix: Prefix for PyConfBox settings in Django settings.
         """
@@ -35,10 +35,10 @@ class DjangoStorage(BaseStorage):
 
     def _get_setting_name(self, key: str) -> str:
         """Get the Django setting name for a PyConfBox key.
-        
+
         Args:
             key: PyConfBox configuration key.
-            
+
         Returns:
             Django setting name.
         """
@@ -46,10 +46,10 @@ class DjangoStorage(BaseStorage):
 
     def get(self, key: str) -> Optional[ConfigValue]:
         """Get a configuration value from Django settings.
-        
+
         Args:
             key: Configuration key.
-            
+
         Returns:
             Configuration value if found, None otherwise.
         """
@@ -76,7 +76,7 @@ class DjangoStorage(BaseStorage):
 
     def set(self, key: str, value: ConfigValue) -> None:
         """Set a configuration value in Django settings.
-        
+
         Args:
             key: Configuration key.
             value: Configuration value to store.
@@ -102,10 +102,10 @@ class DjangoStorage(BaseStorage):
 
     def delete(self, key: str) -> bool:
         """Delete a configuration value from Django settings.
-        
+
         Args:
             key: Configuration key.
-            
+
         Returns:
             True if deleted, False if not found.
         """
@@ -128,10 +128,10 @@ class DjangoStorage(BaseStorage):
 
     def exists(self, key: str) -> bool:
         """Check if a configuration key exists in Django settings.
-        
+
         Args:
             key: Configuration key.
-            
+
         Returns:
             True if exists, False otherwise.
         """
@@ -149,7 +149,7 @@ class DjangoStorage(BaseStorage):
 
     def keys(self) -> List[str]:
         """Get all configuration keys from Django settings.
-        
+
         Returns:
             List of configuration keys.
         """
@@ -182,7 +182,7 @@ class DjangoStorage(BaseStorage):
 
     def update(self, data: Dict[str, ConfigValue]) -> None:
         """Update multiple configuration values in Django settings.
-        
+
         Args:
             data: Dictionary of configuration values.
         """
@@ -191,7 +191,7 @@ class DjangoStorage(BaseStorage):
 
     def get_info(self) -> Dict[str, Any]:
         """Get information about the Django storage.
-        
+
         Returns:
             Storage information dictionary.
         """

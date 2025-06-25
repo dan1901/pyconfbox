@@ -117,4 +117,4 @@ jobs:
         if: steps.check-changes.outputs.run-tests == 'true'
         run: |
           cd packages/${{ matrix.package }}
-          uv run --package ${{ matrix.package }} ruff check --fix . 
+          uv run --package ${{ matrix.package }} ruff check --fix --unsafe-fixes . 

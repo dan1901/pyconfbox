@@ -9,4 +9,4 @@ __email__ = "edc1901@gmail.com"
 
 from .storage import MongoDBStorage
 
-__all__ = ["MongoDBStorage"] 
+__all__ = ["MongoDBStorage"]
