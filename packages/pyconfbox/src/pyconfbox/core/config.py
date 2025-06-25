@@ -23,16 +23,16 @@ class Config:
     
     def __init__(
         self,
-        default_storage: str = "memory",
-        fallback_storage: Optional[str] = None,
+        default_storage: Union[str, BaseStorage] = "memory",
+        fallback_storage: Optional[Union[str, BaseStorage]] = None,
         **storage_configs: Any
     ) -> None:
         """
         설정 관리자를 초기화합니다.
         
         Args:
-            default_storage: 기본 저장소 타입
-            fallback_storage: 폴백 저장소 타입
+            default_storage: 기본 저장소 (타입 문자열 또는 저장소 객체)
+            fallback_storage: 폴백 저장소 (타입 문자열 또는 저장소 객체)
             **storage_configs: 저장소별 설정
         """
         self._configs: Dict[str, ConfigValue] = {}
@@ -40,13 +40,27 @@ class Config:
         self._immutable_manager = ImmutableManager()
         
         # 저장소 설정
-        self._default_storage = default_storage
-        self._fallback_storage = fallback_storage
         self._storage_configs = storage_configs
         self._storages: Dict[str, BaseStorage] = {}
         
         # 기본 저장소들 초기화
         self._init_default_storages()
+        
+        # 기본 저장소 설정
+        if isinstance(default_storage, BaseStorage):
+            storage_name = f"custom_{id(default_storage)}"
+            self._storages[storage_name] = default_storage
+            self._default_storage = storage_name
+        else:
+            self._default_storage = default_storage
+        
+        # 폴백 저장소 설정
+        if isinstance(fallback_storage, BaseStorage):
+            storage_name = f"custom_{id(fallback_storage)}"
+            self._storages[storage_name] = fallback_storage
+            self._fallback_storage = storage_name
+        else:
+            self._fallback_storage = fallback_storage
     
     def _init_default_storages(self) -> None:
         """기본 저장소들을 초기화합니다."""

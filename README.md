@@ -1,215 +1,157 @@
-# PyConfBox 🎯
+# PyConfBox - 통합 설정 관리 시스템
 
-**Python Configuration Management with Multiple Storage Backends**
+**PyConfBox**는 Python 애플리케이션에서 환경변수, 시스템변수, 글로벌변수 등 모든 설정을 통합 관리할 수 있는 강력하고 유연한 설정 관리 시스템입니다.
 
-PyConfBox는 환경변수, 시스템변수, 글로벌변수 등 모든 설정을 통합 관리할 수 있는 강력한 Python 설정 관리 라이브러리입니다.
+## 📦 패키지 구조
 
-## ✨ 주요 기능
+이 저장소는 monorepo 구조로 여러 패키지를 관리합니다:
 
-- **🏗️ 다양한 저장소 지원**: Memory, Environment, File, Redis, SQLite 등
-- **🎯 범위(Scope) 시스템**: env, global, local, system, secret, django 범위 지원
-- **🔒 불변성(Immutability) 제어**: 설정별 불변 지정 및 전체 릴리즈 모드
-- **🔄 자동 타입 변환**: 문자열 → int, float, bool, list, dict 자동 변환
-- **🔌 플러그인 아키텍처**: 확장 가능한 저장소 및 플러그인 시스템
-- **📊 메타데이터 관리**: 설정 통계 및 상태 추적
+### 핵심 패키지
+
+- **[pyconfbox](packages/pyconfbox/)** - 메인 패키지 (필수)
+  - 핵심 설정 관리 시스템
+  - 기본 저장소: Memory, Environment, File, SQLite, Redis
+  - 불변성 관리 및 타입 검증
+
+### 플러그인 패키지
+
+- **[pyconfbox-django](packages/pyconfbox-django/)** - Django 통합
+  - Django 미들웨어 및 설정 연동
+  - `django.conf.settings` 자동 동기화
+
+- **[pyconfbox-mysql](packages/pyconfbox-mysql/)** - MySQL 저장소
+  - MySQL 데이터베이스 저장소 지원
+
+- **[pyconfbox-postgresql](packages/pyconfbox-postgresql/)** - PostgreSQL 저장소
+  - PostgreSQL 데이터베이스 저장소 지원
+
+- **[pyconfbox-mongodb](packages/pyconfbox-mongodb/)** - MongoDB 저장소
+  - MongoDB 문서 데이터베이스 저장소 지원
 
 ## 🚀 빠른 시작
 
-### 설치
+### 1. 메인 패키지 설치
 
 ```bash
 pip install pyconfbox
 ```
 
-### 기본 사용법
+### 2. 기본 사용법
 
 ```python
-from pyconfbox import Config, ConfigScope
+from pyconfbox import Config
 
-# Config 인스턴스 생성
-config = Config(default_storage="memory", fallback_storage="environment")
+# 설정 인스턴스 생성
+config = Config(default_storage='environment', fallback_storage='memory')
 
-# 기본 설정
-config.set("app_name", "MyApp")
-config.set("debug", True)
+# 설정 값 저장
+config.set('API_KEY', 'your-secret-key', scope='secret', immutable=True)
+config.set('DEBUG', True, scope='global')
+config.set('DATABASE_URL', 'sqlite:///app.db', scope='env')
 
-# 타입 변환
-config.set("port", "8080", data_type=int)
-config.set("timeout", "30.5", data_type=float)
-config.set("hosts", "localhost,127.0.0.1", data_type=list)
+# 설정 값 조회
+api_key = config.get('API_KEY', scope='secret')
+debug_mode = config.get('DEBUG', scope='global')
 
-# 범위별 설정
-config.set("database_url", "sqlite:///app.db", scope=ConfigScope.LOCAL)
-config.set("secret_key", "super-secret", scope=ConfigScope.SECRET, immutable=True)
-
-# 설정 조회
-app_name = config.get("app_name")
-port = config.get("port")  # 자동으로 int 타입
-hosts = config.get("hosts")  # 자동으로 list 타입
-
-# 범위별 조회
-global_configs = config.get_by_scope(ConfigScope.GLOBAL)
-secret_configs = config.get_by_scope(ConfigScope.SECRET)
-
-# 릴리즈 모드 (모든 설정 고정)
+# 모든 설정 고정 (불변성 적용)
 config.release()
 ```
 
-## 📋 설정 범위(Scope)
-
-| 범위 | 설명 | 사용 예시 |
-|------|------|-----------|
-| `env` | 환경변수 | OS 환경변수, 프로세스별 설정 |
-| `global` | 글로벌변수 | 애플리케이션 전역 설정 |
-| `local` | 로컬변수 | 모듈/클래스별 지역 설정 |
-| `system` | 시스템변수 | 시스템 레벨 설정 |
-| `secret` | 비밀변수 | 암호화가 필요한 민감한 설정 |
-| `django` | Django설정 | Django 전용 설정 |
-
-## 🏗️ 저장소 아키텍처
-
-### 내장 저장소
-- **Memory**: 인메모리 저장소 (기본)
-- **Environment**: 환경변수 저장소 (읽기 전용)
-- **File**: 파일 기반 저장소 (JSON, YAML, TOML)
-- **Redis**: Redis 저장소
-- **SQLite**: SQLite 데이터베이스 저장소
-
-### 플러그인 저장소 (별도 패키지)
-- **pyconfbox-mysql**: MySQL 저장소
-- **pyconfbox-postgresql**: PostgreSQL 저장소
-- **pyconfbox-mongodb**: MongoDB 저장소
-- **pyconfbox-django**: Django 통합 플러그인
-
-## 🔒 불변성 관리
-
-```python
-# 개별 설정 불변 지정
-config.set("api_key", "secret", immutable=True)
-
-# 불변 설정 변경 시도 (예외 발생)
-try:
-    config.set("api_key", "new_secret")
-except ImmutableConfigError:
-    print("불변 설정은 변경할 수 없습니다!")
-
-# 전체 설정 고정 (릴리즈 모드)
-config.release()
-
-# 릴리즈 후 설정 변경 시도 (예외 발생)
-try:
-    config.set("new_key", "value")
-except ReleasedConfigError:
-    print("릴리즈된 설정은 변경할 수 없습니다!")
-```
-
-## 🔄 자동 타입 변환
-
-```python
-# 문자열 → 정수
-config.set("port", "8080", data_type=int)
-assert config.get("port") == 8080
-
-# 문자열 → 불린
-config.set("debug", "true", data_type=bool)
-assert config.get("debug") is True
-
-# 문자열 → 리스트 (콤마 구분)
-config.set("hosts", "localhost,127.0.0.1", data_type=list)
-assert config.get("hosts") == ["localhost", "127.0.0.1"]
-
-# 문자열 → 딕셔너리 (JSON)
-config.set("db_config", '{"host": "localhost", "port": 5432}', data_type=dict)
-assert config.get("db_config") == {"host": "localhost", "port": 5432}
-```
-
-## 📊 메타데이터 및 통계
-
-```python
-metadata = config.get_metadata()
-
-print(f"총 설정 개수: {metadata.total_configs}")
-print(f"범위별 개수: {metadata.scopes}")
-print(f"저장소별 개수: {metadata.storages}")
-print(f"불변 설정 개수: {metadata.immutable_count}")
-print(f"릴리즈 여부: {metadata.is_released}")
-```
-
-## 🔌 고급 사용법
-
-### 환경변수 접두어 사용
-
-```python
-config = Config(
-    default_storage="environment",
-    env_prefix="MYAPP_"
-)
-
-# MYAPP_DEBUG 환경변수 조회
-debug = config.get("DEBUG")
-```
-
-### 다중 저장소 폴백
-
-```python
-config = Config(
-    default_storage="redis",
-    fallback_storage="memory"
-)
-
-# Redis에서 먼저 찾고, 없으면 메모리에서 찾기
-value = config.get("key", default="default_value")
-```
-
-### 저장소별 설정 지정
-
-```python
-# 특정 저장소에 저장
-config.set("cache_key", "value", storage="redis")
-config.set("temp_data", "value", storage="memory")
-```
-
-## 🧪 테스트
+### 3. 플러그인 설치 (선택사항)
 
 ```bash
-# 개발 환경 설정
-uv sync --dev
+# Django 통합
+pip install pyconfbox-django
 
-# 테스트 실행
-uv run pytest
-
-# 커버리지와 함께 테스트
-uv run pytest --cov=pyconfbox
-
-# 특정 테스트 실행
-uv run pytest tests/test_config.py -v
+# 데이터베이스 저장소
+pip install pyconfbox-mysql
+pip install pyconfbox-postgresql
+pip install pyconfbox-mongodb
 ```
 
-## 📚 문서
+## 🏗️ 주요 특징
 
-- [API 레퍼런스](docs/api/)
-- [사용 가이드](docs/guides/)
-- [예제 코드](docs/examples/)
+### 🎯 변수 범위 (Scope) 시스템
+- **env**: 환경변수
+- **global**: 글로벌 변수
+- **local**: 로컬 변수  
+- **system**: 시스템 변수
+- **secret**: 비밀 변수
+- **django**: Django 설정 (플러그인)
 
-## 🤝 기여하기
+### 🔒 불변성 (Immutability) 제어
+- 개별 설정의 불변성 설정
+- `release()` 메서드로 전체 설정 고정
+- 불변 설정 수정 시 예외 발생
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### 💾 다양한 저장소 지원
+- **내장 저장소**: Memory, Environment, File (JSON/YAML/TOML), SQLite, Redis
+- **플러그인 저장소**: MySQL, PostgreSQL, MongoDB
+- **커스텀 저장소**: `BaseStorage` 상속으로 확장 가능
+
+### 🔧 타입 검증 및 변환
+- 자동 타입 감지 및 변환
+- 커스텀 타입 변환기 지원
+- 타입 안전성 보장
+
+## 📖 문서
+
+각 패키지의 상세한 문서는 해당 패키지 디렉토리의 README.md를 참조하세요:
+
+- [pyconfbox 문서](packages/pyconfbox/README.md)
+- [pyconfbox-django 문서](packages/pyconfbox-django/README.md)
+- [pyconfbox-mysql 문서](packages/pyconfbox-mysql/README.md)
+- [pyconfbox-postgresql 문서](packages/pyconfbox-postgresql/README.md)
+- [pyconfbox-mongodb 문서](packages/pyconfbox-mongodb/README.md)
+
+## 🔨 개발
+
+### 전체 빌드
+
+```bash
+# 모든 패키지 빌드
+python tools/build_all.py
+```
+
+### 개별 패키지 빌드
+
+```bash
+cd packages/pyconfbox
+python -m build
+```
+
+### 테스트
+
+```bash
+# 메인 패키지 테스트
+cd packages/pyconfbox
+uv run pytest -v
+
+# 플러그인 테스트
+cd packages/pyconfbox-django
+pytest -v
+```
 
 ## 📄 라이선스
 
-이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+MIT License - 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
 
-## 🔗 관련 링크
+## 🤝 기여
 
-- [GitHub Repository](https://github.com/dan1901/pyconfbox)
-- [PyPI Package](https://pypi.org/project/pyconfbox/)
-- [Documentation](https://github.com/dan1901/pyconfbox/tree/main/docs)
-- [Issues](https://github.com/dan1901/pyconfbox/issues)
+기여는 언제나 환영합니다! 다음 절차를 따라주세요:
+
+1. 이 저장소를 포크합니다
+2. 기능 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
+3. 변경사항을 커밋합니다 (`git commit -m 'Add amazing feature'`)
+4. 브랜치에 푸시합니다 (`git push origin feature/amazing-feature`)
+5. Pull Request를 생성합니다
+
+## 📞 지원
+
+- 🐛 버그 리포트: [GitHub Issues](https://github.com/dan1901/pyconfbox/issues)
+- 💡 기능 요청: [GitHub Issues](https://github.com/dan1901/pyconfbox/issues)
+- 📧 이메일: edc1901@gmail.com
 
 ---
 
-**Made with ❤️ by PyConfBox Team**
+**PyConfBox**로 더 나은 설정 관리를 경험해보세요! 🚀

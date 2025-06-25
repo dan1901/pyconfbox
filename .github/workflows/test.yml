@@ -1,0 +1,119 @@
+name: Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      pyconfbox: ${{ steps.changes.outputs.pyconfbox }}
+      pyconfbox-django: ${{ steps.changes.outputs.pyconfbox-django }}
+      pyconfbox-mysql: ${{ steps.changes.outputs.pyconfbox-mysql }}
+      pyconfbox-postgresql: ${{ steps.changes.outputs.pyconfbox-postgresql }}
+      pyconfbox-mongodb: ${{ steps.changes.outputs.pyconfbox-mongodb }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            pyconfbox:
+              - 'packages/pyconfbox/**'
+            pyconfbox-django:
+              - 'packages/pyconfbox-django/**'
+            pyconfbox-mysql:
+              - 'packages/pyconfbox-mysql/**'
+            pyconfbox-postgresql:
+              - 'packages/pyconfbox-postgresql/**'
+            pyconfbox-mongodb:
+              - 'packages/pyconfbox-mongodb/**'
+
+  test-pyconfbox:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.pyconfbox == 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11', '3.12', '3.13']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Install uv
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+      
+      - name: Install dependencies
+        run: |
+          cd packages/pyconfbox
+          uv sync --dev
+      
+      - name: Run tests
+        run: |
+          cd packages/pyconfbox
+          uv run pytest -v
+      
+      - name: Run linting
+        run: |
+          cd packages/pyconfbox
+          uv run ruff check .
+
+  test-plugins:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package: [pyconfbox-django, pyconfbox-mysql, pyconfbox-postgresql, pyconfbox-mongodb]
+        python-version: ['3.9', '3.11', '3.13']
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      
+      - name: Check if package changed
+        id: check-changes
+        run: |
+          if [[ "${{ needs.detect-changes.outputs[matrix.package] }}" == "true" ]]; then
+            echo "run-tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "run-tests=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Install dependencies
+        if: steps.check-changes.outputs.run-tests == 'true'
+        run: |
+          python -m pip install --upgrade pip
+          cd packages/${{ matrix.package }}
+          pip install -e .[dev]
+          # Install main pyconfbox package from local
+          cd ../pyconfbox
+          pip install -e .
+      
+      - name: Run tests
+        if: steps.check-changes.outputs.run-tests == 'true'
+        run: |
+          cd packages/${{ matrix.package }}
+          pytest -v
+      
+      - name: Run linting
+        if: steps.check-changes.outputs.run-tests == 'true'
+        run: |
+          cd packages/${{ matrix.package }}
+          ruff check . 
