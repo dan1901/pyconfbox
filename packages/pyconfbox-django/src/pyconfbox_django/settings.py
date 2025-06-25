@@ -60,7 +60,7 @@ class DjangoStorage(BaseStorage):
             return ConfigValue(
                 key=key,
                 value=value,
-                data_type=type(value).__name__,
+                data_type=type(value),
                 scope='django',
                 storage='django'
             )
@@ -74,31 +74,22 @@ class DjangoStorage(BaseStorage):
 
         return None
 
-    def set(self, key: str, value: ConfigValue) -> None:
+    def set(self, key: str, config_value: ConfigValue) -> None:
         """Set a configuration value in Django settings.
 
         Args:
             key: Configuration key.
-            value: Configuration value to store.
+            config_value: Configuration value to set.
         """
         self._ensure_settings_dict()
 
         # Store in PyConfBox data
         pyconfbox_data = getattr(settings, '_pyconfbox_data')
-        pyconfbox_data[key] = {
-            'key': value.key,
-            'value': value.value,
-            'data_type': value.data_type,
-            'scope': value.scope,
-            'storage': value.storage,
-            'immutable': value.immutable,
-            'created_at': value.created_at,
-            'updated_at': value.updated_at
-        }
+        pyconfbox_data[key] = config_value.model_dump()
 
         # Also set as Django setting for direct access
         setting_name = self._get_setting_name(key)
-        setattr(settings, setting_name, value.value)
+        setattr(settings, setting_name, config_value.value)
 
     def delete(self, key: str) -> bool:
         """Delete a configuration value from Django settings.
@@ -180,14 +171,14 @@ class DjangoStorage(BaseStorage):
             if attr_name.startswith(self.prefix):
                 delattr(settings, attr_name)
 
-    def update(self, data: Dict[str, ConfigValue]) -> None:
+    def update(self, config_values: Dict[str, ConfigValue]) -> None:
         """Update multiple configuration values in Django settings.
 
         Args:
-            data: Dictionary of configuration values.
+            config_values: Dictionary of configuration values.
         """
-        for key, value in data.items():
-            self.set(key, value)
+        for key, config_value in config_values.items():
+            self.set(key, config_value)
 
     def get_info(self) -> Dict[str, Any]:
         """Get information about the Django storage.

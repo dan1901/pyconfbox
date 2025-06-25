@@ -34,6 +34,7 @@ class MongoDBStorage(BaseStorage):
         collection: str = "configurations",
         username: Optional[str] = None,
         password: Optional[str] = None,
+        uri: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """Initialize MongoDB storage.
@@ -45,6 +46,7 @@ class MongoDBStorage(BaseStorage):
             collection: Collection name for storing configurations.
             username: MongoDB username (optional).
             password: MongoDB password (optional).
+            uri: MongoDB connection URI (alternative to individual params).
             **kwargs: Additional connection parameters.
         """
         super().__init__()
@@ -61,6 +63,7 @@ class MongoDBStorage(BaseStorage):
         self.collection_name = collection
         self.username = username
         self.password = password
+        self.uri = uri
         self.connection_params = kwargs
 
         self._client = None
@@ -72,13 +75,15 @@ class MongoDBStorage(BaseStorage):
     def _ensure_connection(self) -> None:
         """Ensure MongoDB connection is established."""
         try:
-            # Build connection URI
-            if self.username and self.password:
-                uri = f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/"
+            # Use URI if provided, otherwise build connection URI
+            if self.uri:
+                connection_uri = self.uri
+            elif self.username and self.password:
+                connection_uri = f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/"
             else:
-                uri = f"mongodb://{self.host}:{self.port}/"
+                connection_uri = f"mongodb://{self.host}:{self.port}/"
 
-            self._client = MongoClient(uri, **self.connection_params)
+            self._client = MongoClient(connection_uri, **self.connection_params)
             self._database = self._client[self.database_name]
             self._collection = self._database[self.collection_name]
 

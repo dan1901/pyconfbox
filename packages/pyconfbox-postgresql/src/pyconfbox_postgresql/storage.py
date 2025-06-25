@@ -32,6 +32,7 @@ class PostgreSQLStorage(BaseStorage):
         password: str = "",
         database: str = "pyconfbox",
         table: str = "configurations",
+        connection_string: Optional[str] = None,
         **kwargs: Any
     ) -> None:
         """Initialize PostgreSQL storage.
@@ -43,6 +44,7 @@ class PostgreSQLStorage(BaseStorage):
             password: PostgreSQL password.
             database: Database name.
             table: Table name for storing configurations.
+            connection_string: PostgreSQL connection string (alternative to individual params).
             **kwargs: Additional connection parameters.
         """
         super().__init__()
@@ -53,29 +55,80 @@ class PostgreSQLStorage(BaseStorage):
                 "Install it with: pip install psycopg2-binary"
             )
 
-        self.host = host
-        self.port = port
-        self.user = user
-        self.password = password
-        self.database = database
+        # Parse connection string if provided
+        if connection_string:
+            parsed_params = self._parse_connection_string(connection_string)
+            self.host = parsed_params.get('host', host)
+            self.port = parsed_params.get('port', port)
+            self.user = parsed_params.get('user', user)
+            self.password = parsed_params.get('password', password)
+            self.database = parsed_params.get('database', database)
+            # Store parsed params for connection_params access
+            self.connection_params = {**kwargs, **parsed_params}
+        else:
+            self.host = host
+            self.port = port
+            self.user = user
+            self.password = password
+            self.database = database
+            # Store individual params for connection_params access
+            self.connection_params = {
+                'host': host,
+                'port': port,
+                'user': user,
+                'password': password,
+                'database': database,
+                **kwargs
+            }
+
         self.table = table
-        self.connection_params = kwargs
 
         self._connection = None
         self._ensure_database()
         self._ensure_table()
 
+    def _parse_connection_string(self, connection_string: str) -> Dict[str, Any]:
+        """Parse PostgreSQL connection string.
+        
+        Args:
+            connection_string: Connection string in format postgresql://user:pass@host:port/dbname
+            
+        Returns:
+            Dictionary with parsed connection parameters.
+        """
+        import urllib.parse
+        
+        parsed = urllib.parse.urlparse(connection_string)
+        
+        params = {}
+        if parsed.hostname:
+            params['host'] = parsed.hostname
+        if parsed.port:
+            params['port'] = parsed.port
+        if parsed.username:
+            params['user'] = parsed.username
+        if parsed.password:
+            params['password'] = parsed.password
+        if parsed.path and len(parsed.path) > 1:  # Remove leading '/'
+            params['database'] = parsed.path[1:]
+            
+        return params
+
     def _get_connection(self):
         """Get PostgreSQL database connection."""
         if self._connection is None or self._connection.closed:
             try:
+                # Extract additional params (exclude basic connection params to avoid duplication)
+                additional_params = {k: v for k, v in self.connection_params.items() 
+                                   if k not in {'host', 'port', 'user', 'password', 'database'}}
+                
                 self._connection = psycopg2.connect(
                     host=self.host,
                     port=self.port,
                     user=self.user,
                     password=self.password,
                     database=self.database,
-                    **self.connection_params
+                    **additional_params
                 )
                 self._connection.autocommit = True
             except Exception as e:
@@ -86,6 +139,10 @@ class PostgreSQLStorage(BaseStorage):
     def _ensure_database(self) -> None:
         """Ensure the database exists."""
         try:
+            # Extract additional params (exclude basic connection params to avoid duplication)
+            additional_params = {k: v for k, v in self.connection_params.items() 
+                               if k not in {'host', 'port', 'user', 'password', 'database'}}
+            
             # Connect to default database to create target database if needed
             connection = psycopg2.connect(
                 host=self.host,
@@ -93,7 +150,7 @@ class PostgreSQLStorage(BaseStorage):
                 user=self.user,
                 password=self.password,
                 database='postgres',  # Default database
-                **self.connection_params
+                **additional_params
             )
             connection.autocommit = True
 
@@ -190,10 +247,27 @@ class PostgreSQLStorage(BaseStorage):
                     except (json.JSONDecodeError, TypeError):
                         value = row['value']
 
+                    # Convert data_type string back to Python type
+                    data_type_str = row['data_type']
+                    if data_type_str == 'str':
+                        data_type = str
+                    elif data_type_str == 'int':
+                        data_type = int
+                    elif data_type_str == 'float':
+                        data_type = float
+                    elif data_type_str == 'bool':
+                        data_type = bool
+                    elif data_type_str == 'list':
+                        data_type = list
+                    elif data_type_str == 'dict':
+                        data_type = dict
+                    else:
+                        data_type = str  # fallback
+
                     return ConfigValue(
                         key=row['key'],
                         value=value,
-                        data_type=row['data_type'],
+                        data_type=data_type,
                         scope=row['scope'],
                         storage=row['storage'],
                         immutable=bool(row['immutable']),
@@ -237,7 +311,7 @@ class PostgreSQLStorage(BaseStorage):
                 """, (
                     key,
                     serialized_value,
-                    value.data_type,
+                    value.data_type.__name__,  # Store type name as string
                     value.scope,
                     value.storage,
                     value.immutable,
@@ -352,7 +426,7 @@ class PostgreSQLStorage(BaseStorage):
                     'port': self.port,
                     'database': self.database,
                     'table': self.table,
-                    'postgresql_version': pg_version,
+                    'version': pg_version,  # Changed from postgresql_version to version
                     'total_keys': total_keys
                 }
 
