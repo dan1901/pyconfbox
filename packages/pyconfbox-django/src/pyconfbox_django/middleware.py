@@ -1,6 +1,6 @@
 """Django middleware for PyConfBox integration."""
 
-from typing import Any, Callable
+from typing import Callable
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -34,20 +34,20 @@ class PyConfBoxMiddleware:
             Configured PyConfBox Config instance.
         """
         pyconfbox_settings = getattr(settings, 'PYCONFBOX', {})
-        
+
         default_storage = pyconfbox_settings.get('default_storage', 'environment')
         fallback_storage = pyconfbox_settings.get('fallback_storage', 'memory')
         env_prefix = pyconfbox_settings.get('env_prefix', '')
-        
+
         config = Config(
             default_storage=default_storage,
             fallback_storage=fallback_storage,
             env_prefix=env_prefix
         )
-        
+
         # Sync Django settings to PyConfBox
         self._sync_django_settings(config)
-        
+
         return config
 
     def _sync_django_settings(self, config: Config) -> None:
@@ -61,7 +61,7 @@ class PyConfBoxMiddleware:
             'DEBUG', 'SECRET_KEY', 'ALLOWED_HOSTS', 'DATABASE_URL',
             'STATIC_URL', 'MEDIA_URL', 'TIME_ZONE', 'LANGUAGE_CODE'
         ]
-        
+
         for setting_name in django_settings:
             if hasattr(settings, setting_name):
                 value = getattr(settings, setting_name)
@@ -78,6 +78,6 @@ class PyConfBoxMiddleware:
         """
         # Make config available in request
         request.pyconfbox = self.config
-        
+
         response = self.get_response(request)
-        return response 
+        return response

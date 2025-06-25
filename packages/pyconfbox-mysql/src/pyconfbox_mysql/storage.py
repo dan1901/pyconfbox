@@ -1,7 +1,6 @@
 """MySQL storage backend for PyConfBox."""
 
 import json
-from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 try:
@@ -10,9 +9,9 @@ except ImportError:
     pymysql = None
 
 try:
-    from pyconfbox.storage.base import BaseStorage
-    from pyconfbox.core.types import ConfigValue
     from pyconfbox.core.exceptions import StorageError
+    from pyconfbox.core.types import ConfigValue
+    from pyconfbox.storage.base import BaseStorage
 except ImportError:
     raise ImportError("pyconfbox is required for pyconfbox-mysql plugin")
 
@@ -46,13 +45,13 @@ class MySQLStorage(BaseStorage):
             **kwargs: Additional connection parameters.
         """
         super().__init__()
-        
+
         if pymysql is None:
             raise ImportError(
                 "pymysql package is required for MySQL storage. "
                 "Install it with: pip install pymysql"
             )
-        
+
         self.host = host
         self.port = port
         self.user = user
@@ -60,7 +59,7 @@ class MySQLStorage(BaseStorage):
         self.database = database
         self.table = table
         self.connection_params = kwargs
-        
+
         self._connection = None
         self._ensure_database()
         self._ensure_table()
@@ -81,7 +80,7 @@ class MySQLStorage(BaseStorage):
                 )
             except Exception as e:
                 raise StorageError(f"Failed to connect to MySQL: {e}")
-        
+
         return self._connection
 
     def _ensure_database(self) -> None:
@@ -96,10 +95,10 @@ class MySQLStorage(BaseStorage):
                 charset='utf8mb4',
                 **self.connection_params
             )
-            
+
             with connection.cursor() as cursor:
                 cursor.execute(f"CREATE DATABASE IF NOT EXISTS `{self.database}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci")
-            
+
             connection.close()
         except Exception as e:
             raise StorageError(f"Failed to ensure database exists: {e}")
@@ -107,7 +106,7 @@ class MySQLStorage(BaseStorage):
     def _ensure_table(self) -> None:
         """Ensure the configurations table exists."""
         connection = self._get_connection()
-        
+
         create_table_sql = f"""
         CREATE TABLE IF NOT EXISTS `{self.table}` (
             `key` VARCHAR(255) PRIMARY KEY,
@@ -122,7 +121,7 @@ class MySQLStorage(BaseStorage):
             INDEX idx_storage (`storage`)
         ) ENGINE=InnoDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
         """
-        
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(create_table_sql)
@@ -139,7 +138,7 @@ class MySQLStorage(BaseStorage):
             Configuration value if found, None otherwise.
         """
         connection = self._get_connection()
-        
+
         try:
             with connection.cursor(pymysql.cursors.DictCursor) as cursor:
                 cursor.execute(
@@ -147,14 +146,14 @@ class MySQLStorage(BaseStorage):
                     (key,)
                 )
                 row = cursor.fetchone()
-                
+
                 if row:
                     # Parse JSON value
                     try:
                         value = json.loads(row['value'])
                     except (json.JSONDecodeError, TypeError):
                         value = row['value']
-                    
+
                     return ConfigValue(
                         key=row['key'],
                         value=value,
@@ -165,9 +164,9 @@ class MySQLStorage(BaseStorage):
                         created_at=row['created_at'],
                         updated_at=row['updated_at']
                     )
-                
+
                 return None
-                
+
         except Exception as e:
             raise StorageError(f"Failed to get value from MySQL: {e}")
 
@@ -179,13 +178,13 @@ class MySQLStorage(BaseStorage):
             value: Configuration value to store.
         """
         connection = self._get_connection()
-        
+
         # Serialize value to JSON
         try:
             serialized_value = json.dumps(value.value, ensure_ascii=False)
         except (TypeError, ValueError):
             serialized_value = str(value.value)
-        
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(f"""
@@ -209,7 +208,7 @@ class MySQLStorage(BaseStorage):
                     value.created_at,
                     value.updated_at
                 ))
-                
+
         except Exception as e:
             raise StorageError(f"Failed to set value in MySQL: {e}")
 
@@ -223,7 +222,7 @@ class MySQLStorage(BaseStorage):
             True if deleted, False if not found.
         """
         connection = self._get_connection()
-        
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -231,7 +230,7 @@ class MySQLStorage(BaseStorage):
                     (key,)
                 )
                 return cursor.rowcount > 0
-                
+
         except Exception as e:
             raise StorageError(f"Failed to delete value from MySQL: {e}")
 
@@ -245,7 +244,7 @@ class MySQLStorage(BaseStorage):
             True if exists, False otherwise.
         """
         connection = self._get_connection()
-        
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(
@@ -253,7 +252,7 @@ class MySQLStorage(BaseStorage):
                     (key,)
                 )
                 return cursor.fetchone() is not None
-                
+
         except Exception as e:
             raise StorageError(f"Failed to check existence in MySQL: {e}")
 
@@ -264,23 +263,23 @@ class MySQLStorage(BaseStorage):
             List of configuration keys.
         """
         connection = self._get_connection()
-        
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(f"SELECT `key` FROM `{self.table}`")
                 return [row[0] for row in cursor.fetchall()]
-                
+
         except Exception as e:
             raise StorageError(f"Failed to get keys from MySQL: {e}")
 
     def clear(self) -> None:
         """Clear all configuration values from MySQL."""
         connection = self._get_connection()
-        
+
         try:
             with connection.cursor() as cursor:
                 cursor.execute(f"DELETE FROM `{self.table}`")
-                
+
         except Exception as e:
             raise StorageError(f"Failed to clear MySQL storage: {e}")
 
@@ -300,17 +299,17 @@ class MySQLStorage(BaseStorage):
             Storage information dictionary.
         """
         connection = self._get_connection()
-        
+
         try:
             with connection.cursor() as cursor:
                 # Get table info
                 cursor.execute(f"SELECT COUNT(*) FROM `{self.table}`")
                 total_keys = cursor.fetchone()[0]
-                
+
                 # Get MySQL version
                 cursor.execute("SELECT VERSION()")
                 mysql_version = cursor.fetchone()[0]
-                
+
                 return {
                     'type': 'mysql',
                     'host': self.host,
@@ -320,7 +319,7 @@ class MySQLStorage(BaseStorage):
                     'mysql_version': mysql_version,
                     'total_keys': total_keys
                 }
-                
+
         except Exception as e:
             return {
                 'type': 'mysql',
@@ -339,4 +338,4 @@ class MySQLStorage(BaseStorage):
 
     def __del__(self) -> None:
         """Cleanup when storage is destroyed."""
-        self.close() 
+        self.close()

@@ -9,4 +9,4 @@ __email__ = "edc1901@gmail.com"
 
 from .storage import MySQLStorage
 
-__all__ = ["MySQLStorage"] 
+__all__ = ["MySQLStorage"]

@@ -11,4 +11,4 @@ __email__ = "edc1901@gmail.com"
 from .middleware import PyConfBoxMiddleware
 from .settings import DjangoStorage
 
-__all__ = ["PyConfBoxMiddleware", "DjangoStorage"] 
+__all__ = ["PyConfBoxMiddleware", "DjangoStorage"]
