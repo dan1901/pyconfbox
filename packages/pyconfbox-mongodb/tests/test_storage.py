@@ -134,7 +134,7 @@ class TestMongoDBStorage:
         assert result is not None
         assert result.key == 'test_key'
         assert result.value == 'test_value'
-        assert result.data_type == str
+        assert result.data_type is str
         assert result.scope == ConfigScope.GLOBAL
         assert result.storage == 'mongodb'
         assert result.immutable is False
