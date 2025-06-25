@@ -83,6 +83,11 @@ jobs:
             echo "build=false" >> $GITHUB_OUTPUT
           fi
       
+      - name: Clean previous builds
+        if: steps.should-build.outputs.build == 'true'
+        run: |
+          rm -rf dist
+      
       - name: Build package
         if: steps.should-build.outputs.build == 'true'
         run: |
@@ -91,7 +96,7 @@ jobs:
       - name: Check distribution
         if: steps.should-build.outputs.build == 'true'
         run: |
-          uv tool run twine check packages/${{ matrix.package }}/dist/*
+          uv tool run twine check dist/*
       
       - name: Publish to PyPI
         if: steps.should-build.outputs.build == 'true'
@@ -99,4 +104,4 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          uv tool run twine upload packages/${{ matrix.package }}/dist/* --skip-existing 
+          uv tool run twine upload dist/* --skip-existing 
