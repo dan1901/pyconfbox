@@ -43,8 +43,8 @@ def build_package(package_name: str) -> bool:
     if dist_dir.exists():
         run_command(["rm", "-rf", "dist"], package_dir)
     
-    # Build the package using uv run
-    return run_command(["uv", "run", "--project", str(root_dir), "python", "-m", "build"], package_dir)
+    # Build the package using uv build
+    return run_command(["uv", "build", str(package_dir)], root_dir)
 
 def main():
     """Build all packages."""

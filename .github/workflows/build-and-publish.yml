@@ -58,15 +58,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: '3.11'
+          version: "latest"
       
-      - name: Install build tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
+      - name: Set up Python
+        run: uv python install 3.11
       
       - name: Check if package should be built
         id: should-build
@@ -88,14 +86,12 @@ jobs:
       - name: Build package
         if: steps.should-build.outputs.build == 'true'
         run: |
-          cd packages/${{ matrix.package }}
-          python -m build
+          uv build packages/${{ matrix.package }}
       
       - name: Check distribution
         if: steps.should-build.outputs.build == 'true'
         run: |
-          cd packages/${{ matrix.package }}
-          twine check dist/*
+          uv tool run twine check packages/${{ matrix.package }}/dist/*
       
       - name: Publish to PyPI
         if: steps.should-build.outputs.build == 'true'
@@ -103,5 +99,4 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          cd packages/${{ matrix.package }}
-          twine upload dist/* --skip-existing 
+          uv tool run twine upload packages/${{ matrix.package }}/dist/* --skip-existing 
