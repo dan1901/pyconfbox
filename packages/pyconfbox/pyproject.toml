@@ -5,12 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "pyconfbox"
 version = "0.1.0"
-description = "Python configuration management with multiple storage backends"
+description = "Unified configuration management system for Python applications with multiple storage backends, type validation, and immutability control"
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [
     { name = "Gabriel Ki", email = "edc1901@gmail.com" }
 ]
+keywords = ["configuration", "config", "settings", "environment", "variables", "storage", "django"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -22,6 +23,9 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Utilities",
 ]
 requires-python = ">=3.8"
 dependencies = [
@@ -31,16 +35,14 @@ dependencies = [
     "cryptography>=41.0.0",
 ]
 
-
-
-
 [project.urls]
 Homepage = "https://github.com/dan1901/pyconfbox"
 Documentation = "https://github.com/dan1901/pyconfbox/tree/main/docs"
+"Documentation (English)" = "https://github.com/dan1901/pyconfbox/tree/main/docs/en"
+"Documentation (한국어)" = "https://github.com/dan1901/pyconfbox/tree/main/docs/ko"
 Repository = "https://github.com/dan1901/pyconfbox"
 Issues = "https://github.com/dan1901/pyconfbox/issues"
-
-
+Changelog = "https://github.com/dan1901/pyconfbox/releases"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pyconfbox"]
