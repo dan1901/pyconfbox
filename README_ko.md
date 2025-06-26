@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/pyconfbox.svg)](https://badge.fury.io/py/pyconfbox)
 [![Python Support](https://img.shields.io/pypi/pyversions/pyconfbox.svg)](https://pypi.org/project/pyconfbox/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests](https://github.com/dan1901/pyconfbox/workflows/Tests/badge.svg)](https://github.com/dan1901/pyconfbox/actions)
+[![Test](https://github.com/dan1901/pyconfbox/actions/workflows/test.yml/badge.svg)](https://github.com/dan1901/pyconfbox/actions/workflows/test.yml)
 
 **PyConfBox**는 Python 애플리케이션에서 환경변수, 시스템변수, 글로벌변수 등 모든 설정을 통합 관리할 수 있는 강력하고 유연한 설정 관리 시스템입니다.
 
