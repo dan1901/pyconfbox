@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyconfbox"
-version = "0.1.0"
+version = "0.1.1"
 description = "Unified configuration management system for Python applications with multiple storage backends, type validation, and immutability control"
 readme = "README.md"
 license = {file = "LICENSE"}
