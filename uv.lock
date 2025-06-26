@@ -788,28 +788,27 @@ wheels = [
 
 [[package]]
 name = "pyconfbox"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "packages/pyconfbox" }
 dependencies = [
-    { name = "cryptography" },
     { name = "pydantic", version = "2.10.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pydantic", version = "2.11.7", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
-    { name = "pyyaml" },
-    { name = "toml" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 all = [
+    { name = "cryptography" },
     { name = "pyyaml" },
     { name = "redis", version = "6.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "redis", version = "6.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "toml" },
 ]
-dev = [
-    { name = "pytest", version = "8.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
-    { name = "pytest", version = "8.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
-    { name = "pytest-mock" },
-    { name = "ruff" },
+crypto = [
+    { name = "cryptography" },
+]
+file-formats = [
+    { name = "pyyaml" },
+    { name = "toml" },
 ]
 redis = [
     { name = "redis", version = "6.1.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
@@ -822,32 +821,40 @@ yaml = [
     { name = "pyyaml" },
 ]
 
-[package.metadata]
-requires-dist = [
-    { name = "cryptography", specifier = ">=41.0.0" },
-    { name = "pydantic", specifier = ">=2.0.0" },
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "toml", specifier = ">=0.10.0" },
+[package.dev-dependencies]
+dev = [
+    { name = "pytest", version = "8.3.5", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "pytest", version = "8.4.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
+    { name = "pytest-mock" },
+    { name = "ruff" },
 ]
 
-[package.metadata.requires-dev]
-all = [
-    { name = "pyyaml", specifier = ">=6.0" },
-    { name = "redis", specifier = ">=5.0.0" },
-    { name = "toml", specifier = ">=0.10.0" },
+[package.metadata]
+requires-dist = [
+    { name = "cryptography", marker = "extra == 'all'", specifier = ">=41.0.0" },
+    { name = "cryptography", marker = "extra == 'crypto'", specifier = ">=41.0.0" },
+    { name = "pydantic", specifier = ">=2.0.0" },
+    { name = "pyyaml", marker = "extra == 'all'", specifier = ">=6.0" },
+    { name = "pyyaml", marker = "extra == 'file-formats'", specifier = ">=6.0" },
+    { name = "pyyaml", marker = "extra == 'yaml'", specifier = ">=6.0" },
+    { name = "redis", marker = "extra == 'all'", specifier = ">=5.0.0" },
+    { name = "redis", marker = "extra == 'redis'", specifier = ">=5.0.0" },
+    { name = "toml", marker = "extra == 'all'", specifier = ">=0.10.0" },
+    { name = "toml", marker = "extra == 'file-formats'", specifier = ">=0.10.0" },
+    { name = "toml", marker = "extra == 'toml'", specifier = ">=0.10.0" },
 ]
+provides-extras = ["crypto", "yaml", "toml", "redis", "file-formats", "all"]
+
+[package.metadata.requires-dev]
 dev = [
     { name = "pytest", specifier = ">=8.3.5" },
     { name = "pytest-mock", specifier = ">=3.14.1" },
     { name = "ruff", specifier = ">=0.8.0" },
 ]
-redis = [{ name = "redis", specifier = ">=5.0.0" }]
-toml = [{ name = "toml", specifier = ">=0.10.0" }]
-yaml = [{ name = "pyyaml", specifier = ">=6.0" }]
 
 [[package]]
 name = "pyconfbox-django"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "packages/pyconfbox-django" }
 dependencies = [
     { name = "django", version = "4.2.23", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
@@ -880,7 +887,7 @@ dev = [
 
 [[package]]
 name = "pyconfbox-mongodb"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "packages/pyconfbox-mongodb" }
 dependencies = [
     { name = "pyconfbox" },
@@ -952,7 +959,7 @@ dev = [
 
 [[package]]
 name = "pyconfbox-mysql"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "packages/pyconfbox-mysql" }
 dependencies = [
     { name = "pyconfbox" },
@@ -982,7 +989,7 @@ dev = [
 
 [[package]]
 name = "pyconfbox-postgresql"
-version = "0.1.0"
+version = "0.1.1"
 source = { editable = "packages/pyconfbox-postgresql" }
 dependencies = [
     { name = "psycopg2-binary" },

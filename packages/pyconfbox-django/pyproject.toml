@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyconfbox-django"
-version = "0.1.1"
+version = "0.1.2"
 description = "Django integration plugin for PyConfBox"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -31,7 +31,7 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-    "pyconfbox>=0.1.0",
+    "pyconfbox>=0.1.2",
     "django>=3.2",
 ]
 

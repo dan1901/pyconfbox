@@ -78,10 +78,16 @@ class FileStorage(BaseStorage):
                 if self.format == "json":
                     self._data = json.loads(content)
                 elif self.format == "yaml":
-                    import yaml
+                    try:
+                        import yaml
+                    except ImportError:
+                        raise StorageError("PyYAML is required for YAML support. Install with: pip install pyconfbox[yaml]")
                     self._data = yaml.safe_load(content) or {}
                 elif self.format == "toml":
-                    import toml
+                    try:
+                        import toml
+                    except ImportError:
+                        raise StorageError("toml is required for TOML support. Install with: pip install pyconfbox[toml]")
                     self._data = toml.loads(content)
                 else:
                     raise StorageError(f"Unsupported format: {self.format}")
@@ -98,10 +104,16 @@ class FileStorage(BaseStorage):
                 if self.format == "json":
                     json.dump(data, f, indent=2, ensure_ascii=False)
                 elif self.format == "yaml":
-                    import yaml
+                    try:
+                        import yaml
+                    except ImportError:
+                        raise StorageError("PyYAML is required for YAML support. Install with: pip install pyconfbox[yaml]")
                     yaml.safe_dump(data, f, default_flow_style=False, allow_unicode=True)
                 elif self.format == "toml":
-                    import toml
+                    try:
+                        import toml
+                    except ImportError:
+                        raise StorageError("toml is required for TOML support. Install with: pip install pyconfbox[toml]")
                     toml.dump(data, f)
                 else:
                     raise StorageError(f"Unsupported format: {self.format}")
@@ -257,7 +269,18 @@ class YAMLStorage(FileStorage):
         Args:
             file_path: YAML 파일 경로
             **kwargs: 추가 설정
+
+        Raises:
+            StorageError: PyYAML이 설치되지 않은 경우
         """
+        # 의존성 체크를 먼저 수행
+        try:
+            import yaml
+        except ImportError:
+            raise StorageError(
+                "PyYAML is required for YAML support. Install with: pip install pyconfbox[yaml]"
+            )
+        
         super().__init__(file_path, format="yaml", **kwargs)
 
 
@@ -271,5 +294,16 @@ class TOMLStorage(FileStorage):
         Args:
             file_path: TOML 파일 경로
             **kwargs: 추가 설정
+
+        Raises:
+            StorageError: toml이 설치되지 않은 경우
         """
+        # 의존성 체크를 먼저 수행
+        try:
+            import toml
+        except ImportError:
+            raise StorageError(
+                "toml is required for TOML support. Install with: pip install pyconfbox[toml]"
+            )
+        
         super().__init__(file_path, format="toml", **kwargs)

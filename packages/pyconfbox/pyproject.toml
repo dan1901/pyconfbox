@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyconfbox"
-version = "0.1.1"
+version = "0.1.2"
 description = "Unified configuration management system for Python applications with multiple storage backends, type validation, and immutability control"
 readme = "README.md"
 license = {file = "LICENSE"}
@@ -30,9 +30,6 @@ classifiers = [
 requires-python = ">=3.8"
 dependencies = [
     "pydantic>=2.0.0",
-    "pyyaml>=6.0",
-    "toml>=0.10.0",
-    "cryptography>=41.0.0",
 ]
 
 [project.urls]
@@ -46,6 +43,21 @@ Changelog = "https://github.com/dan1901/pyconfbox/releases"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/pyconfbox"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "/.github",
+    "/docs",
+    "/examples",
+    "*.pyc",
+    "*.pyo",
+    "*.pyd",
+    "__pycache__",
+    ".pytest_cache",
+    ".coverage",
+    ".mypy_cache",
+    ".ruff_cache",
+]
 
 [tool.ruff]
 line-length = 88
@@ -68,7 +80,11 @@ dev = [
     "pytest-mock>=3.14.1",
     "ruff>=0.8.0",
 ]
-redis = ["redis>=5.0.0"]
+
+[project.optional-dependencies]
+crypto = ["cryptography>=41.0.0"]
 yaml = ["pyyaml>=6.0"]
 toml = ["toml>=0.10.0"]
-all = ["redis>=5.0.0", "pyyaml>=6.0", "toml>=0.10.0"]
+redis = ["redis>=5.0.0"]
+file-formats = ["pyyaml>=6.0", "toml>=0.10.0"]
+all = ["cryptography>=41.0.0", "pyyaml>=6.0", "toml>=0.10.0", "redis>=5.0.0"]

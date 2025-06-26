@@ -61,7 +61,7 @@ class RedisStorage(BaseStorage):
 
         except ImportError:
             raise StorageError(
-                "Redis package not found. Install with: pip install redis"
+                "Redis package not found. Install with: pip install pyconfbox[redis]"
             )
         except Exception as e:
             raise StorageError(f"Failed to connect to Redis: {e}")
